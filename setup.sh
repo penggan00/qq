@@ -3,14 +3,8 @@
 # 设置脚本在遇到错误时停止执行
 set -e
 
-# 创建 qq 目录（如果不存在）
-if [ ! -d "qq" ]; then
-    echo "创建 qq 目录..."
-    mkdir ~/qq
-fi
-
 # 进入 qq 目录
-cd ~/qq
+cd qq
 
 # 初始化 npm 项目
 echo "初始化 npm 项目..."
