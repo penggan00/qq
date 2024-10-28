@@ -1,4 +1,4 @@
-cd qq
+git clone https://github.com/penggan00/qq.git  
 chmod +x ~/qq/qq.sh  
 chmod +x ~/qq/os.sh  
 ~/qq/qq.sh  
