@@ -3,7 +3,7 @@ chmod +x ~/qq/qq.sh
 chmod +x ~/qq/setup.sh  
 bash ~/qq/setup.sh  
 
-crontab -e
+crontab -e  
 npm install  
 node index.js  
 npm install telegraf dotenv tencentcloud-sdk-nodejs
