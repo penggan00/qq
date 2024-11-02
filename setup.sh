@@ -3,15 +3,15 @@
 # 设置脚本在遇到错误时停止执行
 set -e
 
+# 为 crontab 添加定时任务（每 5 分钟运行一次）
+echo "添加 crontab 任务..."
+(crontab -l 2>/dev/null; echo "*/5 * * * * ~/qq.sh") | crontab -
+
 # 进入 qq 目录
 cd qq
 mv qq.sh ~/
 chmod +x ~/qq.sh
 chmod +x ~/qq/setup.sh
-
-# 为 crontab 添加定时任务（每 5 分钟运行一次）
-echo "添加 crontab 任务..."
-(crontab -l 2>/dev/null; echo "*/5 * * * * ~/qq.sh") | crontab -
 
 # 初始化 npm 项目
 echo "初始化 npm 项目..."
