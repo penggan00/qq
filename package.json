@@ -1,3 +1,4 @@
+
 {
   "name": "translate",
   "version": "1.0.0",
@@ -8,9 +9,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "git clone https://github.com/penggan00/qq.git   chmod +x ~/qq/qq.sh   chmod +x ~/qq/setup.sh   bash ~/qq/setup.sh",
   "dependencies": {
     "dotenv": "^16.4.5",
+    "p-limit": "^6.1.0",
     "telegraf": "^4.16.3",
     "tencentcloud-sdk-nodejs": "^4.0.959"
   }
