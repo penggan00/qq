@@ -6,4 +6,4 @@ bash ~/qq/setup.sh
 crontab -e  
 npm install  
 node index.js  
-npm install telegraf dotenv tencentcloud-sdk-nodejs
+npm install dotenv telegraf tencentcloud-sdk-nodejs p-limit
