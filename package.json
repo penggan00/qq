@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "git clone https://github.com/penggan00/qq.git   chmod +x ~/qq/qq.sh   chmod +x ~/qq/setup.sh   bash ~/qq/setup.sh",
+  "description": "git clone https://github.com/penggan00/qq.git",
   "dependencies": {
     "dotenv": "^16.4.5",
     "p-limit": "^6.1.0",
