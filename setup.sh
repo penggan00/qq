@@ -13,10 +13,6 @@ chmod +x ~/qq/setup.sh
 echo "添加 crontab 任务..."
 (crontab -l 2>/dev/null; echo "*/5 * * * * bash ~/qq.sh") | crontab -
 
-# 初始化 npm 项目
-echo "初始化 npm 项目..."
-npm init -y
-
 # 检查 package.json 是否存在
 if [[ -f "package.json" ]]; then
     echo "检测到 package.json，正在安装所有依赖包..."
