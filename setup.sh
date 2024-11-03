@@ -5,13 +5,12 @@ set -e
 
 # 进入 qq 目录
 cd ~/qq
-mv qq.sh ~/
-chmod +x ~/qq.sh
+chmod +x ~/qq/qq.sh
 chmod +x ~/qq/setup.sh
 
 # 为 crontab 添加定时任务（每 5 分钟运行一次）
 echo "添加 crontab 任务..."
-(crontab -l 2>/dev/null; echo "*/5 * * * * bash ~/qq.sh") | crontab -
+(crontab -l 2>/dev/null; echo "*/6 * * * * /bin/bash ~/qq/qq.sh") | crontab -
 
 # 检查 package.json 是否存在
 if [[ -f "package.json" ]]; then
