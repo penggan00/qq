@@ -24,7 +24,7 @@
 
     const tmtClient = new TmtClient(clientConfig);
 
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const botToken = process.env.TELEGRAM_API_KEY;
     const bot = new Telegraf(botToken);
 
     const allowedUserId = parseInt(process.env.ALLOWED_USER_ID);
