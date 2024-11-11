@@ -28,10 +28,10 @@
     const bot = new Telegraf(botToken);
 
     const allowedUserId = parseInt(process.env.ALLOWED_USER_ID);
-    const limit = pLimit(3); // 限制并发数为3
+    const limit = pLimit(2); // 限制并发数为2
 
     // 带重试机制的文本翻译
-    async function translateText(text, sourceLang, targetLang, retries = 3) {
+    async function translateText(text, sourceLang, targetLang, retries = 2) {
         const params = {
             SourceText: text,
             Source: sourceLang,
