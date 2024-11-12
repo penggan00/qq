@@ -27,7 +27,7 @@
     const botToken = process.env.TELEGRAM_API_KEY;
     const bot = new Telegraf(botToken);
 
-    const allowedUserId = parseInt(process.env.ALLOWED_USER_ID);
+    const allowedUserId = parseInt(process.env.TELEGRAM_CHAT_ID);
     const limit = pLimit(2); // 限制并发数为2
 
     // 带重试机制的文本翻译
