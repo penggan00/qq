@@ -9,6 +9,6 @@ else
     # 进入 qq.js 所在的目录
     cd ~/qq
     # 使用 nohup 启动 qq.js 并将输出重定向到日志文件
-    nohup node ~/qq/qq.js
+    node ~/qq/qq.js &
     echo "qq.js 已启动"
 fi
