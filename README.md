@@ -35,6 +35,11 @@ sudo systemctl daemon-reload
 sudo systemctl start qq
 sudo systemctl enable qq
 
+# 永久禁止
+sudo systemctl stop qq.service
+sudo systemctl disable qq.service
+sudo systemctl is-enabled qq.service
+
 
 # root用户······························
 如果你希望用系统服务的方式运行脚本，创建一个 systemd 服务文件。
