@@ -8,7 +8,7 @@ const tmtClient = new tencentcloud.tmt.v20180321.Client({
         secretId: process.env.TENCENT_SECRET_ID,
         secretKey: process.env.TENCENT_SECRET_KEY,
     },
-    region: process.env.TENCENT_REGION || "ap-shanghai",
+    region: process.env.TENCENT_REGION || "ap-na-siliconvalley",
     profile: {
         signMethod: "TC3-HMAC-SHA256",
         httpProfile: {

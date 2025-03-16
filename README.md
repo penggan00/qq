@@ -30,15 +30,15 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 -------------------------------------------------------------------------------------------------------------
-# 运行以下命令，重新加载 systemd 配置文件：# 启动并启用服务： 启动你的服务并设置为开机启动：
-sudo systemctl daemon-reload
-sudo systemctl start qq
-sudo systemctl enable qq
-
 # 永久禁止
 sudo systemctl stop qq.service
 sudo systemctl disable qq.service
 sudo systemctl is-enabled qq.service
+# 启动
+sudo systemctl daemon-reload
+sudo systemctl start qq
+sudo systemctl enable qq
+
 
 
 # root用户······························

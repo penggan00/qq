@@ -1,0 +1,159 @@
+require('dotenv').config();
+const { Telegraf } = require('telegraf');
+const tencentcloud = require("tencentcloud-sdk-nodejs");
+
+// 环境变量校验
+['TELEGRAM_API_KEY', 'TENCENT_SECRET_ID', 'TENCENT_SECRET_KEY', 'TELEGRAM_CHAT_ID'].forEach(varName => {
+  if (!process.env[varName]) {
+    console.error(`缺少必要环境变量: ${varName}`);
+    process.exit(1);
+  }
+});
+
+// 初始化腾讯云客户端
+const tmtClient = new tencentcloud.tmt.v20180321.Client({
+  credential: {
+    secretId: process.env.TENCENT_SECRET_ID,
+    secretKey: process.env.TENCENT_SECRET_KEY,
+  },
+  region: "ap-na-siliconvalley",
+  profile: {
+    httpProfile: { reqTimeout: 30 }
+  }
+});
+
+// 初始化 Telegram 机器人
+const bot = new Telegraf(process.env.TELEGRAM_API_KEY);
+
+// 工具函数：智能分割消息
+function splitMessage(text) {
+  const MAX_LENGTH = 4096;
+  const splitPoints = [
+    { regex: /\n{2,}/g, weight: 3 },  // 段落分隔
+    { regex: /[。！？]/g, weight: 2 }, // 句子结束
+    { regex: /[，；]/g, weight: 1 }    // 句子中间
+  ];
+
+  let remaining = text;
+  const chunks = [];
+
+  while (remaining.length > 0) {
+    let splitIndex = -1;
+    let maxWeight = 0;
+
+    // 动态寻找最佳分割点
+    for (const { regex, weight } of splitPoints) {
+      const matches = [...remaining.matchAll(regex)];
+      for (const match of matches) {
+        if (match.index < MAX_LENGTH && weight > maxWeight) {
+          splitIndex = match.index + match[0].length;
+          maxWeight = weight;
+        }
+      }
+    }
+
+    const chunk = splitIndex > 0 
+      ? remaining.substring(0, splitIndex)
+      : remaining.substring(0, MAX_LENGTH);
+
+    chunks.push(chunk.trim());
+    remaining = remaining.substring(chunk.length).trim();
+  }
+
+  return chunks;
+}
+
+// 工具函数：输入消毒
+function sanitizeInput(text) {
+  return text
+    .replace(/<[^>]*>?/gm, '') // 移除HTML标签
+    .replace(/[^\p{L}\p{N}\p{P}\s]/gu, '') // 过滤非常规字符
+    .substring(0, 20000); // 长度限制
+}
+
+// 工具函数：语言检测
+async function detectLanguage(text) {
+  try {
+    const { Lang } = await tmtClient.LanguageDetect({ 
+      Text: text,
+      ProjectId: 1323297
+    });
+    return Lang.toLowerCase();
+  } catch (error) {
+    console.error('Language detection failed:', error);
+    return 'auto';
+  }
+}
+
+// 工具函数：翻译文本
+async function translateText(text, source, target) {
+  const params = {
+    SourceText: text,
+    Source: source,
+    Target: target,
+    ProjectId: 1323297
+  };
+
+  try {
+    const { TargetText } = await tmtClient.TextTranslate(params);
+    return TargetText;
+  } catch (error) {
+    console.error('Translation failed:', error);
+    throw new Error(`翻译失败: ${error.message}`);
+  }
+}
+
+// 处理 Telegram 消息
+bot.on('text', async (ctx) => {
+  try {
+    // 权限验证
+    if (ctx.message.from.id !== parseInt(process.env.TELEGRAM_CHAT_ID)) {
+      return ctx.reply('⛔ 未经授权的访问');
+    }
+
+    // 发送进度提示
+    const { message_id: messageId } = await ctx.reply('🔄 正在分析文本...');
+
+    // 输入消毒
+    const sanitizedText = sanitizeInput(ctx.message.text);
+
+    // 语言检测
+    const sourceLang = await detectLanguage(sanitizedText);
+    const targetLang = sourceLang === 'zh' ? 'en' : 'zh';
+
+    // 执行翻译
+    const translatedText = await translateText(sanitizedText, sourceLang, targetLang);
+
+    // 分块发送结果
+    const chunks = splitMessage(translatedText);
+    await ctx.telegram.editMessageText(
+      ctx.chat.id,
+      messageId,
+      null,
+      "✅ 翻译完成："
+    );
+
+    for (const chunk of chunks) {
+      await ctx.reply(chunk);
+    }
+  } catch (error) {
+    console.error('处理错误:', error);
+    await ctx.reply(`❌ 错误：${error.message}`);
+  }
+});
+
+// 启动机器人
+bot.launch().then(() => {
+  console.log('机器人已启动');
+}).catch(error => {
+  console.error('启动失败:', error);
+});
+
+// 错误处理
+process.on('uncaughtException', error => {
+  console.error('未捕获异常:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未处理的 Promise 拒绝:', promise, '原因:', reason);
+});
