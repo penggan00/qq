@@ -8,9 +8,6 @@ cd ~/qq
 chmod +x ~/qq/qq.sh
 chmod +x ~/qq/setup.sh
 
-# 为 crontab 添加定时任务（每 5 分钟运行一次）
-echo "添加 crontab 任务..."
-(crontab -l 2>/dev/null; echo "*/16 * * * * /bin/bash ~/qq/qq.sh") | crontab -
 
 # 检查 package.json 是否存在
 if [[ -f "package.json" ]]; then
