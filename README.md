@@ -13,7 +13,7 @@ Description=QQ Script
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/node /root/qq/qq.js
+ExecStart=/usr/bin/python3 /root/qq/qq.py
 Restart=always
 User=root
 Environment=PATH=/usr/bin:/usr/local/bin
@@ -34,6 +34,8 @@ sudo systemctl stop qq.service
 sudo systemctl disable qq.service
 sudo systemctl is-enabled qq.service
 
-
+python3 -m venv qq_venv
+# 激活虚拟环境
+source qq_venv/bin/activate
 
 

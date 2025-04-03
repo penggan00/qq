@@ -1,0 +1,8 @@
+# 强制挂载项目目录到容器内
+docker run -d \
+  --name qq-translator \
+  -v $(pwd):/app \          # 挂载整个项目目录
+  -w /app \                 # 设置工作目录
+  --env-file .env \
+  --restart unless-stopped \
+  qq-translator

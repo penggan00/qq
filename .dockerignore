@@ -1,3 +1,4 @@
+.gitignore
 .env
 qq.sh
 qq.md
@@ -11,3 +12,4 @@ chats.db-wal
 qq_venv
 setup.sh
 package.json
+translations.db
