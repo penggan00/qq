@@ -1,8 +1,8 @@
-# 强制挂载项目目录到容器内
 docker run -d \
   --name qq-translator \
-  -v $(pwd):/app \          # 挂载整个项目目录
-  -w /app \                 # 设置工作目录
-  --env-file .env \
   --restart unless-stopped \
-  qq-translator
+  --memory=512m \
+  --cpus=1 \
+  -v /docker/qq-translator/data:/app/data \  # 持久化数据目录
+  -e TZ=Asia/Shanghai \                      # 显式设置时区
+  penggan0/qq-translator:latest
