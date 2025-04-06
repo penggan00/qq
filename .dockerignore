@@ -13,4 +13,6 @@ qq_venv
 setup.sh
 package.json
 translations.db
-Dockerfile2
+Dockerfile.slim
+Dockerfile.alpine
+qq2.py
