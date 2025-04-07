@@ -32,23 +32,3 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/qq-translator:latest
             ${{ secrets.DOCKER_HUB_USERNAME }}/qq-translator:${{ github.sha }}
-
-      - name: Create source code archive
-        if: success() && github.event_name == 'push'
-        run: |
-          mkdir -p dist
-          tar -czvf dist/rss-full-src-${{ github.sha }}.tar.gz --exclude='.git' --exclude='.github' .
-          zip -r dist/rss-full-src-${{ github.sha }}.zip . -x '*.git*' -x '*.github*'
-
-      - name: Create GitHub Release
-        if: success() && github.event_name == 'push'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ github.run_number }}      
-          name: Release v${{ github.run_number }}   
-          body: "Automated release from GitHub Actions"  
-          files: |
-            dist/rss-full-src-${{ github.sha }}.tar.gz
-            dist/rss-full-src-${{ github.sha }}.zip
-          draft: false   
-          prerelease: false 
