@@ -16,3 +16,4 @@ translations.db
 Dockerfile.slim
 Dockerfile.alpine
 qq2.py
+README.md
