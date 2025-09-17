@@ -44,10 +44,15 @@ sudo systemctl restart qq.service && \
 echo "qq.service 配置成功！当前状态：" && \
 sudo systemctl status qq.service --no-pager -l
 # ···············································
+sudo systemctl status gpt.service  # 查看服务状态
+sudo systemctl stop gpt.service     # 停止服务
+sudo systemctl disable gpt.service  # 禁用开机自启
+sudo systemctl daemon-reload         # 重新加载 systemd 配置
+# (可选) sudo rm /etc/systemd/system/gpt.service # 删除服务文件 (慎用！)
+sudo systemctl status gpt.service  # 再次查看服务状态进行验证
 
 
-
-
+sudo systemctl restart qq.service # 重启
 
 
 
