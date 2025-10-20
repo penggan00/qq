@@ -4,12 +4,12 @@ docker build -t qq-translator .
 git clone https://github.com/penggan00/qq.git
 cd qq
 docker pull penggan0/qq-translator:latest
-
+```
 sudo docker-compose down
-##### sudo docker-compose pull
+sudo docker-compose pull
 sudo docker-compose up -d
-
-##### ·················································
+```
+```
 ##### 1. 创建服务文件（带错误检查）
 sudo bash -c 'cat > /etc/systemd/system/qq.service <<EOF
 [Unit]
@@ -35,36 +35,28 @@ StandardError=file:/var/log/qq-error.log
 [Install]
 WantedBy=multi-user.target
 EOF'
-
-##### 2. 重载systemd并启动服务（带状态检查）
+```
+```
+# 2. 重载systemd并启动服务（带状态检查）
 sudo systemctl daemon-reload && \
 sudo systemctl start qq.service && \
 sudo systemctl enable qq.service && \
 sudo systemctl restart qq.service && \
 echo "qq.service 配置成功！当前状态：" && \
 sudo systemctl status qq.service --no-pager -l
-##### ···············································
-sudo systemctl status gpt.service  ##### 查看服务状态
-sudo systemctl stop gpt.service     ##### 停止服务
-sudo systemctl disable gpt.service  ##### 禁用开机自启
-sudo systemctl daemon-reload         ##### 重新加载 systemd 配置
-##### (可选) sudo rm /etc/systemd/system/gpt.service ##### 删除服务文件 (慎用！)
-sudo systemctl status gpt.service  ##### 再次查看服务状态进行验证
-
+ 
+```
+```
+sudo systemctl status gpt.service  # 查看服务状态
+sudo systemctl stop gpt.service     # 停止服务
+sudo systemctl disable gpt.service  # 禁用开机自启
+sudo systemctl daemon-reload         # 重新加载 systemd 配置
+# (可选) sudo rm /etc/systemd/system/gpt.service # 删除服务文件 (慎用！)
 
 sudo systemctl restart qq.service ##### 重启
+```
 
-
-
-
-
-
-
-
-
-
-
-
+```
 
 sudo nano /etc/systemd/system/qq.service
 ##### `````````````````````````````````
@@ -96,9 +88,9 @@ sudo systemctl status qq.service
 ##### 禁用开机自启动：
 ##### sudo systemctl disable qq.service
 sudo systemctl stop qq.service   ##### 如果需要停止服务：
+```
 
-
-##### `````````````````````````````````````````````````````````````````````````````````````````
+```
 sudo bash -c 'cat > /etc/systemd/system/qq.service <<EOF
 [Unit]
 Description=qq
@@ -115,7 +107,8 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
-##### ````````````````````````````````````````````````````````````````````````````````````````````````````
+```
+```
 systemctl daemon-reload   ##### 重新加载 systemd 配置
 systemctl start qq.service   ##### 启动服务
 systemctl enable qq.service  ##### 设置开机自启动
@@ -124,3 +117,4 @@ systemctl status qq.service'  ##### 检查服务状态
 ##### sudo systemctl stop qq.service   ##### 如果需要停止服务：
 
 sudo systemctl restart qq.service  ##### 重启更新代码
+```
