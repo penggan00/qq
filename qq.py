@@ -3,24 +3,18 @@
 import os
 import re
 import asyncio
+import psutil
 from datetime import datetime
 from typing import List, Optional, Tuple
+from functools import wraps
 from dotenv import load_dotenv
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.tmt.v20180321 import tmt_client, models
 from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, MessageHandler, filters, ContextTypes, CommandHandler
 import aiosqlite
-import logging
-
-# 日志配置
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
-logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -36,7 +30,6 @@ class Config:
     def _get_env(self, var_name: str) -> str:
         value = os.getenv(var_name)
         if not value:
-            logger.error(f"Missing required environment variable: {var_name}")
             raise ValueError(f"Missing required environment variable: {var_name}")
         return value
 
@@ -45,7 +38,6 @@ class Config:
         try:
             return [int(id_str.strip()) for id_str in ids_str.split(',')]
         except ValueError:
-            logger.error(f"Invalid {var_name} format")
             raise ValueError(f"Invalid {var_name} format")
 
 config = Config()
@@ -97,8 +89,7 @@ class AsyncTranslationCache:
                 )
                 await db.commit()
             return True
-        except Exception as e:
-            logger.error(f"Cache set error: {e}")
+        except Exception:
             return False
 
     async def clean_expired(self, days: int = 300):
@@ -133,7 +124,6 @@ def detect_language(text: str) -> str:
 
 def get_translation_direction(text: str) -> Tuple[str, str]:
     lang = detect_language(text)
-    # 可扩展多语种支持
     if lang == 'zh':
         return ('zh', 'en')
     elif lang == 'ja':
@@ -166,7 +156,6 @@ class TencentTranslator:
         )
 
     async def translate(self, text: str, source_lang: str, target_lang: str, max_retries: int = 3) -> str:
-        # 用线程池防止阻塞主事件循环
         loop = asyncio.get_running_loop()
         last_error = None
         for attempt in range(1, max_retries + 1):
@@ -183,7 +172,6 @@ class TencentTranslator:
                 return result
             except Exception as e:
                 last_error = e
-                logger.error(f"Tencent translate error: {e}")
                 if attempt < max_retries:
                     await asyncio.sleep(min(2 ** attempt, 5))
         raise last_error if last_error else Exception("Translation error")
@@ -191,9 +179,9 @@ class TencentTranslator:
 translator = TencentTranslator()
 
 def require_auth(func):
+    @wraps(func)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        if update.message.chat.id not in config.AUTHORIZED_CHAT_IDS:
-            logger.warning(f"Unauthorized access: {update.message.chat.id}")
+        if update.effective_chat.id not in config.AUTHORIZED_CHAT_IDS:
             return
         return await func(update, context, *args, **kwargs)
     return wrapper
@@ -206,8 +194,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     source_lang, target_lang = get_translation_direction(text)
     try:
         cached = await cache.get(text, source_lang, target_lang)
-    except Exception as e:
-        logger.error(f"Cache get error: {e}")
+    except Exception:
         cached = None
     if cached:
         await send_long_message(update, cached)
@@ -217,26 +204,68 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await cache.set(text, source_lang, target_lang, translated)
         await send_long_message(update, translated)
     except Exception as e:
-        logger.error(f"Translation error: {e}")
         await update.message.reply_text(f"❌ 翻译出错: {str(e)}")
 
 async def send_long_message(update: Update, text: str, chunk_size: int = 3900):
-    # 按 Telegram 限制分片，避免多字节字符截断
     idx, length = 0, len(text)
     while idx < length:
         chunk = text[idx:idx+chunk_size]
         await update.message.reply_text(chunk)
         idx += chunk_size
 
-async def startup(app: Application):
+@require_auth
+async def htop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """显示 VPS 系统状态信息"""
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+        
+        memory = psutil.virtual_memory()
+        memory_total_gb = memory.total / (1024 ** 3)
+        memory_used_gb = memory.used / (1024 ** 3)
+        memory_percent = memory.percent
+        
+        disk = psutil.disk_usage('/')
+        disk_total_gb = disk.total / (1024 ** 3)
+        disk_used_gb = disk.used / (1024 ** 3)
+        disk_percent = disk.percent
+        
+        boot_time = datetime.fromtimestamp(psutil.boot_time())
+        uptime = datetime.now() - boot_time
+        
+        net_io = psutil.net_io_counters()
+        
+        message = (
+            "🖥️ *VPS 系统状态*\n\n"
+            f"*CPU 使用率:* {cpu_percent}%\n"
+            f"*内存使用:* {memory_used_gb:.1f}GB / {memory_total_gb:.1f}GB ({memory_percent}%)\n"
+            f"*磁盘使用:* {disk_used_gb:.1f}GB / {disk_total_gb:.1f}GB ({disk_percent}%)\n"
+            f"*系统运行时间:* {str(uptime).split('.')[0]}\n"
+            f"*网络发送:* {net_io.bytes_sent / (1024 ** 2):.1f} MB\n"
+            f"*网络接收:* {net_io.bytes_recv / (1024 ** 2):.1f} MB\n\n"
+            f"*更新时间:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        
+        await update.message.reply_text(message, parse_mode='Markdown')
+        
+    except Exception as e:
+        await update.message.reply_text(f"❌ 获取系统信息出错: {str(e)}")
+
+async def startup(application: Application):
     await cache.init_db()
-    logger.info("Database initialized")
+
+async def shutdown(application: Application):
+    pass
 
 def main():
-    app = Application.builder().token(config.TELEGRAM_TOKEN).build()
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-    app.post_init = startup
-    app.run_polling()
+    application = Application.builder().token(config.TELEGRAM_TOKEN).build()
+    
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    application.add_handler(CommandHandler("htop", htop_command))
+    
+    application.post_init = startup
+    application.post_shutdown = shutdown
+    
+    application.run_polling()
 
 if __name__ == "__main__":
     main()

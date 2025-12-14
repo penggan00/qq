@@ -1,30 +1,45 @@
 # syntax=docker/dockerfile:1.4
 
-# 阶段1：构建依赖（使用更小的基础镜像）
+# 阶段1：构建依赖
 FROM --platform=$BUILDPLATFORM python:3.11-alpine as builder
 
 WORKDIR /build
-COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --user --no-cache-dir -r requirements.txt
 
-# 阶段2：运行时环境（剥离所有构建依赖）
+# 安装构建依赖
+RUN apk add --no-cache gcc musl-dev linux-headers
+
+COPY requirements.txt .
+
+# 使用虚拟环境而不是 --user
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
+
+# 阶段2：运行时环境
 FROM python:3.11-alpine
 
 WORKDIR /app
-# 只复制必要的Python库
-COPY --from=builder /root/.local/lib/python3.11/site-packages /root/.local/lib/python3.11/site-packages
-COPY --from=builder /root/.local/bin /root/.local/bin
-# 按需复制文件（避免COPY . .）
+
+# 安装运行时依赖（如果需要）
+# 常见依赖：libssl, libffi, libpq (PostgreSQL), libxml2, libxslt等
+RUN apk add --no-cache libssl3 tzdata
+
+# 复制虚拟环境
+COPY --from=builder /opt/venv /opt/venv
+
+# 复制应用代码
 COPY qq.py .
 
-ENV PATH=/root/.local/bin:$PATH \
+# 正确设置环境变量
+ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/root/.local/lib/python3.11/site-packages \
-    TZ=Asia/Shanghai
+    PYTHONDONTWRITEBYTECODE=1 \
+    TZ=Asia/Singapore
 
-# 清理缓存（Alpine镜像需要手动清理）
-RUN rm -rf /var/cache/apk/* /tmp/*
+# 清理缓存
+RUN rm -rf /var/cache/apk/* /tmp/* /root/.cache
 
 VOLUME /app
 CMD ["python", "qq.py"]
