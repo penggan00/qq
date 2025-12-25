@@ -27,8 +27,6 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF'
-```
-```
 # 2. 重载systemd并启动服务（带状态检查）
 sudo systemctl daemon-reload && \
 sudo systemctl start qq.service && \
