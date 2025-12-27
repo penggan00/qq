@@ -10,7 +10,7 @@ sudo docker-compose pull
 sudo docker-compose up -d
 ```
 ```
-##### 1. 创建服务文件（带错误检查）
+## 1. 创建服务文件（带错误检查）
 sudo bash -c 'cat > /etc/systemd/system/qq.service <<EOF
 [Unit]
 Description=QQ Service
