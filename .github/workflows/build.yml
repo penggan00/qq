@@ -15,7 +15,7 @@ jobs:
     
     - name: Create venv and install packages
       run: |
-        python3 -m venv rss_venv
+        python3 -m venv --copies rss_venv
         source rss_venv/bin/activate
         pip install --upgrade pip
         pip install \
