@@ -41,6 +41,13 @@ jobs:
         rm -rf rss_venv/lib/python3.*/site-packages/setuptools
         find rss_venv -type d -name "__pycache__" -exec rm -rf {} +
     
+    - name: Debug size
+      run: |
+        echo "=== venv size ==="
+        du -sh rss_venv
+        echo "=== file count ==="
+        find rss_venv | wc -l
+    
     - name: Package
       run: tar -czf rss_venv.tar.gz rss_venv
     
