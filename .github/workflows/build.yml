@@ -1,0 +1,41 @@
+name: Build Alpine Python Venv
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: alpine:3.23
+    
+    steps:
+    - name: Install system dependencies
+      run: |
+        apk add --no-cache python3 py3-pip gcc musl-dev linux-headers
+    
+    - name: Create venv and install packages
+      run: |
+        python3 -m venv rss_venv
+        source rss_venv/bin/activate
+        pip install --upgrade pip
+        pip install \
+          psutil==7.1.3 \
+          python-dotenv==1.2.1 \
+          python-telegram-bot==22.5 \
+          aiosqlite==0.22.0 \
+          tencentcloud-sdk-tmt
+    
+    - name: Clean up unused files
+      run: |
+        rm -rf rss_venv/lib/python3.*/site-packages/pip
+        rm -rf rss_venv/lib/python3.*/site-packages/setuptools
+        find rss_venv -type d -name "__pycache__" -exec rm -rf {} +
+    
+    - name: Package
+      run: tar -czf rss_venv.tar.gz rss_venv
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rss-venv-alpine
+        path: rss_venv.tar.gz
