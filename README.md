@@ -1,3 +1,12 @@
+# 在 VPS 上（先装好 python3）
+apk add python3
+# 把 rss_venv.tar.gz 传到 VPS，然后：
+tar -xzf rss_venv.tar.gz
+source rss_venv/bin/activate
+# 验证
+python -c "import psutil; import telegram; import aiosqlite; print('完美运行')"
+
+
 ##### 构建docker 
 docker build -t qq-translator .
 ##### 
@@ -28,12 +37,11 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF'
 # 2. 重载systemd并启动服务（带状态检查）
-sudo systemctl daemon-reload && \
-sudo systemctl start qq.service && \
-sudo systemctl enable qq.service && \
-sudo systemctl restart qq.service && \
-echo "qq.service 配置成功！当前状态：" && \
-sudo systemctl status qq.service --no-pager -l
+sudo systemctl daemon-reload
+sudo systemctl start qq.service
+sudo systemctl enable qq.service
+sudo systemctl restart qq.service
+sudo systemctl status qq.service  # 查看服务状态
  
 ```
 ```
