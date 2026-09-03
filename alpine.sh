@@ -1,6 +1,8 @@
-tar -xzf rss_venv.tar.gz
-tar -xzf rss_venv.tar.gz -C /root/rss/
-
+apk add git
+git clone https://github.com/penggan00/rss.git
+#github上编译qq虚拟环境
+tar -xzf /root/rss_venv.tar.gz -C /root/rss/
+python3 -m venv rss_venv
 
 cat > /etc/init.d/qq-bot << 'EOF'
 #!/sbin/openrc-run
@@ -12,8 +14,8 @@ command_args="/root/rss/qq.py"
 command_user="root"
 command_background=true
 pidfile="/run/qq-bot.pid"
-#output_log="/root/rss/qq.log"
-#error_log="/root/rss/qq.log"
+output_log="/root/rss/qq.log"
+error_log="/root/rss/qq.log"
 
 depend() {
     need net
@@ -28,8 +30,6 @@ chmod +x /etc/init.d/qq-bot
 rc-update add qq-bot default
 rc-service qq-bot start
 
-# 停止
-rc-service qq-bot stop
 # 重启
 rc-service qq-bot restart
 # 查看状态
