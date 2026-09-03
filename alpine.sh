@@ -1,7 +1,7 @@
 apk add git
 git clone https://github.com/penggan00/rss.git
 #github上编译qq虚拟环境
-tar -xzf /root/rss_venv.tar.gz -C /root/rss/
+tar -xzf /root/rss/rss_venv.tar.gz -C /root/rss/
 python3 -m venv rss_venv
 
 cat > /etc/init.d/qq-bot << 'EOF'
@@ -29,16 +29,14 @@ EOF
 chmod +x /etc/init.d/qq-bot
 rc-update add qq-bot default
 rc-service qq-bot start
-
-# 重启
-rc-service qq-bot restart
 # 查看状态
 rc-service qq-bot status
 # 看日志
 tail -f /root/rss/qq.log
 
 
-
+# 重启
+rc-service qq-bot restart
 # 停止
 rc-service qq-bot stop
 # 2. 从默认运行级别移除服务（禁止开机自启）
