@@ -23,17 +23,8 @@ jobs:
           python-dotenv==1.2.1 \
           python-telegram-bot==22.5 \
           aiosqlite==0.22.0 \
-          aiohttp==3.11.16
-    
-    - name: Remove unused SDK modules
-      run: |
-        SDK_DIR="rss_venv/lib/python3.12/site-packages/tencentcloud"
-        for dir in "$SDK_DIR"/*/; do
-          dirname=$(basename "$dir")
-          if [ "$dirname" != "common" ] && [ "$dirname" != "tmt" ]; then
-            rm -rf "$dir"
-          fi
-        done
+          aiohttp==3.11.16 \
+          --break-system-packages
     
     - name: Clean up unused files
       run: |
