@@ -24,22 +24,32 @@ jobs:
         pip install \
           psutil==7.1.3 \
           python-dotenv==1.2.1 \
-          python-telegram-bot==22.5 \
+          "python-telegram-bot[job-queue]==22.5" \
           aiosqlite==0.22.0 \
           aiohttp==3.11.16 \
           Pillow==12.0.0 \
           google-genai==2.22.0 \
           md2tgmd==0.3.10
-          # 移除 --break-system-packages，在 venv 中不需要
     
     - name: Clean up unused files
       run: |
-        rm -rf rss_venv/lib/python3.*/site-packages/pip
-        rm -rf rss_venv/lib/python3.*/site-packages/setuptools
-        rm -rf rss_venv/lib/python3.*/site-packages/*.dist-info
-        rm -rf rss_venv/lib/python3.*/site-packages/*.egg-info
+        # 清理 __pycache__ 和 .pyc 文件
         find rss_venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
         find rss_venv -type f -name "*.pyc" -delete 2>/dev/null || true
+        
+        # 删除测试目录（节省空间）
+        find rss_venv -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
+        find rss_venv -type d -name "test" -exec rm -rf {} + 2>/dev/null || true
+        
+        # 删除 pip 缓存，但保留 pip 本身
+        rm -rf rss_venv/lib/python3.*/site-packages/pip-*.dist-info/top_level.txt 2>/dev/null || true
+        
+        # 删除 setuptools（保留 pip）
+        rm -rf rss_venv/lib/python3.*/site-packages/setuptools* 2>/dev/null || true
+        
+        # 删除 .dist-info 中的无用文件（但保留包本身）
+        find rss_venv -type d -name "*.dist-info" -exec rm -rf {}/RECORD \; 2>/dev/null || true
+        find rss_venv -type d -name "*.dist-info" -exec rm -rf {}/entry_points.txt \; 2>/dev/null || true
     
     - name: Debug size
       run: |
@@ -47,6 +57,8 @@ jobs:
         du -sh rss_venv
         echo "=== file count ==="
         find rss_venv | wc -l
+        echo "=== pip exists? ==="
+        ls -la rss_venv/bin/pip 2>/dev/null || echo "pip not found"
     
     - name: Package
       run: tar -czf rss_venv.tar.gz rss_venv
