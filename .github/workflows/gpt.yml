@@ -1,4 +1,4 @@
-name: qq Build Alpine Python Venv
+name: gpt Build Alpine Python Venv
 
 on:
   workflow_dispatch:
