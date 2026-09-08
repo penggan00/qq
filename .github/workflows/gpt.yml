@@ -1,4 +1,4 @@
-name: gpt Build Alpine Python Venv
+name: qq Build Alpine Python Venv
 
 on:
   workflow_dispatch:
@@ -11,10 +11,7 @@ jobs:
     steps:
     - name: Install system dependencies
       run: |
-        apk add --no-cache \
-          python3 python3-dev py3-pip gcc musl-dev linux-headers \
-          libjpeg-turbo-dev zlib-dev libwebp-dev tiff-dev \
-          freetype-dev lcms2-dev openjpeg-dev
+        apk add --no-cache python3 python3-dev py3-pip gcc musl-dev linux-headers
     
     - name: Create venv and install packages
       run: |
@@ -29,27 +26,14 @@ jobs:
           aiohttp==3.11.16 \
           Pillow==12.0.0 \
           google-genai==2.22.0 \
-          md2tgmd==0.3.10
+          md2tgmd==0.3.10 \
+          --break-system-packages
     
     - name: Clean up unused files
       run: |
-        # 清理 __pycache__ 和 .pyc 文件
-        find rss_venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-        find rss_venv -type f -name "*.pyc" -delete 2>/dev/null || true
-        
-        # 删除测试目录（节省空间）
-        find rss_venv -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
-        find rss_venv -type d -name "test" -exec rm -rf {} + 2>/dev/null || true
-        
-        # 删除 pip 缓存，但保留 pip 本身
-        rm -rf rss_venv/lib/python3.*/site-packages/pip-*.dist-info/top_level.txt 2>/dev/null || true
-        
-        # 删除 setuptools（保留 pip）
-        rm -rf rss_venv/lib/python3.*/site-packages/setuptools* 2>/dev/null || true
-        
-        # 删除 .dist-info 中的无用文件（但保留包本身）
-        find rss_venv -type d -name "*.dist-info" -exec rm -rf {}/RECORD \; 2>/dev/null || true
-        find rss_venv -type d -name "*.dist-info" -exec rm -rf {}/entry_points.txt \; 2>/dev/null || true
+        rm -rf rss_venv/lib/python3.*/site-packages/pip
+        rm -rf rss_venv/lib/python3.*/site-packages/setuptools
+        find rss_venv -type d -name "__pycache__" -exec rm -rf {} +
     
     - name: Debug size
       run: |
@@ -57,8 +41,6 @@ jobs:
         du -sh rss_venv
         echo "=== file count ==="
         find rss_venv | wc -l
-        echo "=== pip exists? ==="
-        ls -la rss_venv/bin/pip 2>/dev/null || echo "pip not found"
     
     - name: Package
       run: tar -czf rss_venv.tar.gz rss_venv
