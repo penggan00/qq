@@ -10,11 +10,14 @@ cat > /etc/init.d/qq-bot << 'EOF'
 
 name="QQ Telegram Bot"
 description="QQ Translation Bot Service"
+
 command="/root/rss/rss_venv/bin/python"
 command_args="/root/rss/qq.py"
 command_user="root"
 command_background=true
 pidfile="/run/qq-bot.pid"
+
+# 日志配置（取消注释启用）
 #output_log="/root/rss/qq.log"
 #error_log="/root/rss/qq.log"
 
@@ -24,16 +27,22 @@ depend() {
 }
 
 start_pre() {
-    sleep 10
+    # 确保目录和日志文件存在
+    mkdir -p /root/rss
+    touch /root/rss/qq.log 2>/dev/null || true
+    sleep 2
+}
+
+stop_post() {
+    rm -f /run/qq-bot.pid
 }
 EOF
+
 chmod +x /etc/init.d/qq-bot
 rc-update add qq-bot default
 rc-service qq-bot start
 # 查看状态
 rc-service qq-bot status
-# 看日志
-tail -f /root/rss/qq.log
 
 
 # 重启
