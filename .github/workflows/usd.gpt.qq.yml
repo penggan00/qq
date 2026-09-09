@@ -1,4 +1,4 @@
-name: gpt qq Alpine rss_venv
+name: gpt qq usd Alpine rss_venv
 
 on:
   workflow_dispatch:
