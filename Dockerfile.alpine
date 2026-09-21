@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1.4
+
+# 阶段1：构建依赖（使用更小的基础镜像）
+FROM --platform=$BUILDPLATFORM python:3.11-alpine as builder
+
+WORKDIR /build
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --user --no-cache-dir -r requirements.txt
+
+# 阶段2：运行时环境（剥离所有构建依赖）
+FROM python:3.11-alpine
+
+WORKDIR /app
+# 只复制必要的Python库
+COPY --from=builder /root/.local/lib/python3.11/site-packages /root/.local/lib/python3.11/site-packages
+COPY --from=builder /root/.local/bin /root/.local/bin
+# 按需复制文件（避免COPY . .）
+COPY qq.py .
+
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/root/.local/lib/python3.11/site-packages \
+    TZ=Asia/Shanghai
+
+# 清理缓存（Alpine镜像需要手动清理）
+RUN rm -rf /var/cache/apk/* /tmp/*
+
+VOLUME /app
+CMD ["python", "qq.py"]
