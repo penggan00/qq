@@ -1,5 +1,6 @@
 apk add git
 git clone https://github.com/penggan00/rss.git
+apk del git
 #github上编译qq虚拟环境
 tar -xzf /root/rss/rss_venv.tar.gz -C /root/rss/
 rm -rf /root/rss/rss_venv.tar.gz
