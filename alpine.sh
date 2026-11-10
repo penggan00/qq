@@ -50,5 +50,5 @@ rc-service qq-bot status
 rc-service qq-bot restart
 # 停止
 rc-service qq-bot stop
-# 2. 从默认运行级别移除服务（禁止开机自启）
+# 禁止开机自启
 rc-update del qq-bot default
